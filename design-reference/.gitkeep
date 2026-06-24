@@ -1,0 +1,3 @@
+On first build, unzip your Claude Design project into this folder as scaffolding.
+After the first build, this folder is disposable — the durable design truth lives in
+../[product]-sot/design/direction.md and the built UI itself.
