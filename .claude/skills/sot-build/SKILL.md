@@ -19,46 +19,51 @@ execution layer.
 
 ## Pick the mode first
 
-- **Cold setup** — you've been handed a **dumped handoff file** (and usually a design `.zip`)
-  for a product whose repos **do not exist yet**. Create them from the templates. Go to
-  **Setup**. (This is why the framework ships as a plugin: installing it makes this skill
-  available *before* any product repo exists.)
-- **Existing project** — a paired SoT repo already exists and you're building a task or
-  applying a changeset. Go to **Guard → Orient**.
+- **Cold setup** — you're running **inside the `sot-framework-code` template** and the user
+  has **attached** a handoff file (+ design `.zip`) for a product whose repos **do not exist
+  yet**. Create them from the templates. Go to **Setup**. (Running from the code template is
+  what makes this skill available before any product repo exists.)
+- **Existing project** — you're in a real product's `<slug>-code` repo with a paired
+  `<slug>-sot` sibling; you're building a task or applying an attached changeset. Go to
+  **Guard → Orient**.
 
-If unsure which: a product SoT repo with an `INDEX.md` already present → existing project;
-otherwise → cold setup.
+If unsure which: cwd is a template (`sot-framework-code`) and inputs are attached → cold setup;
+a paired product SoT repo with an `INDEX.md` already exists → existing project.
 
 ---
 
 ## Setup — create a new product's repos from the templates
 
-Run this the first time a product is handed off. The user dumps the artifacts and tells you
-to set up; you do the rest. Assume `gh` is configured.
+Run this the first time a product is handed off. **You are running inside the code template
+repo (`sot-framework-code`)** — that's how this skill is available before any product repo
+exists. The user has **attached** the handoff and design to the message. You do the rest.
 
-1. **Locate the inputs — don't hunt blindly.**
-   - The **handoff** is a single markdown file whose sections are delimited by
-     `# FILE: <relative/path>` lines. It carries `foundation.md`, one file per product/
-     business area, `design/direction.md`, and `tasks/open/001-*.md`.
-   - The **design** is a Claude Design `.zip` export.
-   - They're wherever the user dropped them (the working folder, Downloads, …). Find them.
-     If either is genuinely ambiguous, **ask once** for the path. **Never guess a location
-     and scaffold from the guess** — that produces duplicate folders and wasted searching.
-2. **Confirm two things, then stop asking:**
-   - **Product short-name** — default: derived from the handoff title (e.g. "Set" → `set`).
-   - **Where the repos live** — the parent folder for the two sibling repos. Default: the
-     current directory.
-3. **Copy the templates** into `[parent]/[product]-sot` and `[parent]/[product]-code`.
-   Source: the local template repos if present, else `gh repo clone CATrainer/sot-framework`
-   and `gh repo clone CATrainer/sot-framework-code`. **Delete the copied `.git`** from each —
-   the product gets its own history, not the framework's.
+1. **Read the attached inputs — they are attachments, not files to hunt for.**
+   - The **handoff** is a single markdown file: a `# PRODUCT: <Name> · slug: <slug>` header,
+     then sections delimited by `# FILE: <relative/path>` lines (`foundation.md`, one file per
+     product/business area, `design/direction.md`, `tasks/open/001-*.md`).
+   - The **design** is a Claude Design `.zip` (or, accepted as a fallback, a path to one).
+   - If the handoff isn't attached, or has no `# PRODUCT:` header, **ask once** for it. If the
+     design zip is missing, **ask once**. **Never guess and scaffold from the guess** — that
+     produces duplicate folders and wasted searching.
+2. **Take the slug from the handoff header** — use it verbatim as `<slug>`. Do not invent or
+   re-derive a name; chat already chose it.
+3. **Create the product folder and copy both templates into it.**
+   - Product folder: `<slug>/`, created as a **sibling of the templates** (i.e. next to
+     `sot-framework-code/` and `sot-framework/`), unless the user said otherwise.
+   - `<slug>/<slug>-code` ← copy of **this** repo (the code template, your cwd).
+   - `<slug>/<slug>-sot`  ← copy of the **SoT template**: the sibling `../sot-framework` if
+     present, else `gh repo clone CATrainer/sot-framework`, else **ask once** for its path.
+   - **Delete the copied `.git`** from each — the product gets its own history, not the
+     framework's. Exclude `design-reference/` contents from the code copy if any leaked in.
 4. **Populate the SoT from the handoff** (see *Populate* below) and **unzip the design** into
-   `[product]-code/design-reference/`.
-5. **Give each repo its own git + remote.** In each: `git init`, stage, baseline commit, then
-   `gh repo create CATrainer/[product]-sot --private --source=. --remote=origin --push`
-   (and `[product]-code`). **Private by default** — this is a real product, not a template.
-   If `gh` is not authenticated, **stop** and tell the user to run `gh auth login`.
-6. Proceed to build task 001 (**Execute → Write back → Report**).
+   `<slug>/<slug>-code/design-reference/`.
+5. **Give each repo its own git + private remote.** In each: `git init`, stage, baseline
+   commit, then `gh repo create <slug>-sot --private --source=. --remote=origin --push`
+   (and `<slug>-code`). **Private by default** — this is a real product, not a template. If
+   `gh` is not authenticated, **stop** and tell the user to run `gh auth login`.
+6. From here on, work **in `<slug>/<slug>-code`** (the product, not the template). Proceed to
+   build task 001 (**Execute → Write back → Report**).
 
 ### Populate — split the handoff into the SoT files
 - Split the handoff on its `# FILE: <path>` delimiters and write each section to that path,
