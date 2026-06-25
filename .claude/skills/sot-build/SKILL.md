@@ -56,13 +56,24 @@ exists. The user has **attached** the handoff and design to the message. You do 
      present, else `gh repo clone CATrainer/sot-framework`, else **ask once** for its path.
    - **Delete the copied `.git`** from each — the product gets its own history, not the
      framework's. Exclude `design-reference/` contents from the code copy if any leaked in.
-4. **Populate the SoT from the handoff** (see *Populate* below) and **unzip the design** into
+4. **Turn the copies into product repos (strip template-only scaffolding).** A product repo is
+   not a template, so remove the framework packaging the copy dragged along:
+   - From `<slug>-sot`: delete `.claude-plugin/`, `skills/`, `SETUP.md`, and the framework
+     `README.md`. **Keep** `CLAUDE.md` (the SoT rules govern the product), `framework/`
+     (cold-start/iterate, used when iterating), and the content dirs.
+   - From `<slug>-code`: delete `SETUP.md`. **Keep** `CLAUDE.md`, `.claude/skills/` (the build
+     skill lives here for iteration), and `LICENSE`.
+   - In `<slug>-code/CLAUDE.md`, rewrite the **SoT path** line to `../<slug>-sot` (the template
+     ships the default `../sprout-sot` — leaving it breaks the pairing).
+   - Add a `.gitignore` to `<slug>-code`: `node_modules/`, `.venv/`, `__pycache__/`, `*.pyc`,
+     `.env`, `.env.*`, `dist/`, `build/`, `*.db`, `.pytest_cache/`, `.DS_Store`.
+5. **Populate the SoT from the handoff** (see *Populate* below) and **unzip the design** into
    `<slug>/<slug>-code/design-reference/`.
-5. **Give each repo its own git + private remote.** In each: `git init`, stage, baseline
+6. **Give each repo its own git + private remote.** In each: `git init`, stage, baseline
    commit, then `gh repo create <slug>-sot --private --source=. --remote=origin --push`
    (and `<slug>-code`). **Private by default** — this is a real product, not a template. If
    `gh` is not authenticated, **stop** and tell the user to run `gh auth login`.
-6. From here on, work **in `<slug>/<slug>-code`** (the product, not the template). Proceed to
+7. From here on, work **in `<slug>/<slug>-code`** (the product, not the template). Proceed to
    build task 001 (**Execute → Write back → Report**).
 
 ### Populate — split the handoff into the SoT files
@@ -70,8 +81,12 @@ exists. The user has **attached** the handoff and design to the message. You do 
   **replacing the Sprout example entirely** — delete the template's `foundation.md`,
   `product/reminders.md`, `business/pricing.md`, `design/direction.md`, and
   `tasks/open/001-reminders-engine.md`, and write the handoff's versions in their place.
-- A handoff "commitments" / business section lands in `business/` (e.g.
-  `business/commitments.md`) — that folder is the home for business area files.
+- **Route each `# FILE:` section to the right folder.** The path may be **full**
+  (`product/identity.md`, `business/commitments.md`) — use it as-is — or **flat**
+  (`identity.md`, `commitments.md`). When flat: `foundation.md`, `design/…`, and `tasks/…` go
+  to their literal path; a **business** section (status / downstream-constraint format, e.g.
+  commitments) → `business/<name>.md`; any other **area spec** (problem / invariant /
+  deliverables format) → `product/<name>.md`.
 - **Rebuild `INDEX.md`** to the real areas and statuses (the index is sacred).
 - The handoff file is now consumed. It's preserved in the baseline commit, so delete it from
   the working tree — working files hold only what is currently true.
